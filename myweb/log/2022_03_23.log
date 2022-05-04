@@ -1,0 +1,20 @@
+2022-03-23 11:01:56.004009 [info]:========== Server init ==========
+2022-03-23 11:01:56.004053 [info]:Port:12345, OpenLinger: false
+2022-03-23 11:01:56.004060 [info]:Listen Mode: LT, OpenConn Mode: LT
+2022-03-23 11:01:56.004064 [info]:LogSys level: 1
+2022-03-23 11:01:56.004068 [info]:srcDir: /home/xf/a-web/myweb/resources/
+2022-03-23 11:01:56.004083 [info]:SqlConnPool num: 12, ThreadPool num: 6
+2022-03-23 11:01:56.004223 [info]:database test1 begin
+2022-03-23 11:01:59.418277 [info]:database test1 end
+2022-03-23 11:01:59.418419 [info]:database test2 begin
+2022-03-23 11:02:01.347406 [info]:database test2 end
+2022-03-23 11:04:18.204025 [info]:========== Server init ==========
+2022-03-23 11:04:18.204054 [info]:Port:12345, OpenLinger: false
+2022-03-23 11:04:18.204060 [info]:Listen Mode: LT, OpenConn Mode: LT
+2022-03-23 11:04:18.204126 [info]:LogSys level: 1
+2022-03-23 11:04:18.204137 [info]:srcDir: /home/xf/a-web/myweb/resources/
+2022-03-23 11:04:18.204243 [info]:SqlConnPool num: 12, ThreadPool num: 6
+2022-03-23 11:04:18.204283 [info]:database test1 begin
+2022-03-23 11:04:21.603090 [info]:database test1 end
+2022-03-23 11:04:21.603209 [info]:database test2 begin
+2022-03-23 11:04:23.546839 [info]:database test2 end

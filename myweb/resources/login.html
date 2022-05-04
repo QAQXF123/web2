@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://apps.bdimg.com/libs/jquerymobile/1.4.5/jquery.mobile-1.4.5.min.css">
+    <script src="https://apps.bdimg.com/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="https://apps.bdimg.com/libs/jquerymobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+</head>
+<style>
+
+
+</style>
+<script>
+</script>
+<body>
+<div data-role="page" id="login">
+    <div role="main" align="center">
+        <div>
+            <h1 >用户登录</h1>
+	        <form action="login" method="post">
+                <div>
+                    <input type="text" name="usernum" placeholder="账号" required="required">
+                </div>
+                <br>
+                <div>
+                    <input type="password" name="password" placeholder="用户密码"required="required">
+                </div>
+                <br>
+                <div>
+                    <button type="submit">登录</button>
+                </div>
+            </form>
+            <a href="#register" class="ui-btn ui-btn-b" style="text-align: center" >我要注册</a>
+        </div>   
+    </div>
+</div>
+
+<div data-role="page" id="register">
+    <div role="main" align="center">
+        <div>
+            <h1 >注册</h1>
+	        <form action="register" method="post">
+                <div>
+                    <input type="text" name="usernum" placeholder="账号" required="required">
+                    <br>
+                </div>
+                <div>
+                    <input type="text" name="username" placeholder="用户名" required="required">
+                </div>
+                <br>
+                <div>
+                    <input type="password" name="password" placeholder="用户密码"required="required">
+                </div>
+                <br>
+                <div>
+                    <button type="submit">注册</button>
+                </div>
+            </form>
+            <a href="#login" class="ui-btn ui-btn-b" style="text-align: center" >返回登录</a>
+
+        </div>   
+    </div>
+</div>
+
+
+</div>
+</body>
