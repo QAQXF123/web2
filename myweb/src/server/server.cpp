@@ -1,4 +1,5 @@
 #include"server.h"
+#include"../util/util.h"
 #include<iostream>
 
 using namespace std;
@@ -7,8 +8,9 @@ Server::Server(
             int port, int trigMode, int timeOutMS, bool OptLinger,
             int sqlPort, const char* sqlUser, const  char* sqlPwd,
             const char* dbName, int connPoolNum, int threadNum,
-            bool openLog, int logLevel, int logQueSize):
-            port_(port), openLinger_(OptLinger), timeOutMS_(timeOutMS), isClose_(false),
+            bool openLog, int logLevel, int logQueSize, bool useCache, bool isDebug):
+            port_(port), openLinger_(OptLinger), timeOutMS_(timeOutMS), 
+            isClose_(false), isDebug_(isDebug), useCache_(useCache),
             threadpool_(new ThreadPool(threadNum)), epoller_(new Epoller()), socket_(new Socket(port)),
             cache_(new Cache()), timer_(new Timer()), tableManager_(new bustub::TableManager())
             
@@ -16,22 +18,16 @@ Server::Server(
 
         
 
-        printf("database test1 end\n\n\n\n");
     srcDir_ = getcwd(nullptr, 256);
-    
     assert(srcDir_);
     strncat(srcDir_, "/resources/", 16);
     HttpConnection::userCount = 0;
     HttpConnection::srcDir = srcDir_;
     HttpRequest::tableManager = tableManager_.get();
-   // printf("srcDir:%s\n", srcDir_);
-
-    
     timeOutMS_ = 0;
-
     InitEventMode_(0);
     listenFd_ = socket_->Init();
-   // printf("listenFd:%d, srcDir:%s\n", listenFd_, srcDir_);
+    Dprintf("listenFd:%d, srcDir:%s\n", listenFd_, srcDir_);
     openLog = true;
     if(listenFd_ == -1  || epoller_->AddFd(listenFd_,  listenEvent_ | EPOLLIN) == 0) {
         isClose_ = true;
@@ -42,7 +38,6 @@ Server::Server(
         Log::Instance()->init(logLevel, "./log", ".log", logQueSize);
         if(isClose_) { LOG_ERROR("========== Server init error!=========="); }
         else {
-            //printf("init log\n");
             LOG_INFO("========== Server init ==========");
             LOG_INFO("Port:%d, OpenLinger: %s", port_, OptLinger? "true":"false");
             LOG_INFO("Listen Mode: %s, OpenConn Mode: %s",
@@ -52,29 +47,25 @@ Server::Server(
             LOG_INFO("srcDir: %s", HttpConnection::srcDir);
             LOG_INFO("SqlConnPool num: %d, ThreadPool num: %d", connPoolNum, threadNum);
         }
+        if(isDebug_){
+            //数据库测试
+            Dprintf("database test beign\n\n\n");
+            LOG_INFO("database test1 begin");
+            tableManager_->test1();
+            LOG_INFO("database test1 end");
+            LOG_INFO("database test2 begin");
+            tableManager_->test2();
+            LOG_INFO("database test2 end");
+            LOG_INFO("database test3 begin");
+            tableManager_->test3();
+            LOG_INFO("database test3 end");
+            auto rands = tableManager_->GetRands(1e6);
+            LOG_INFO("database test4 begin");
+            tableManager_->test4(rands);
+            LOG_INFO("database test4 end");
+            Dprintf("database test end\n\n\n");
+        }
        
-        printf("database test beign\n\n\n");
-
-        LOG_INFO("database test1 begin");
-        tableManager_->test1();
-        LOG_INFO("database test1 end");
-
-        LOG_INFO("database test2 begin");
-        tableManager_->test2();
-        LOG_INFO("database test2 end");
-
-       /* LOG_INFO("database test3 begin");
-        tableManager_->test3();
-        LOG_INFO("database test3 end");*/
-
-        auto rands = tableManager_->GetRands(1e6);
-
-        /*LOG_INFO("database test4 begin");
-        
-        tableManager_->test4(rands);
-        LOG_INFO("database test4 end");*/
-
-        printf("database test end\n\n\n");
     }
 }
 
@@ -82,7 +73,6 @@ Server::~Server() {
     close(listenFd_);
     isClose_ = true;
     free(srcDir_);
-   // SqlConnPoolInstance()->ClosePool();
 }
 
 
@@ -94,25 +84,30 @@ void Server::Start() {
             timeMS = timer_->GetNextTick();
         }
         int eventCnt = epoller_->Wait(timeMS);
-    //    printf("eventCnt:%d\n", eventCnt);
         for(int i = 0; i < eventCnt; i++) {
             /* 处理事件 */
             int fd = epoller_->GetEventsFd(i);
             uint32_t events = epoller_->GetEvents(i);
-            if(fd == listenFd_) {
+            if(fd == listenFd_) {  
+                //处理监听套接字
                 DealListen_();
             }else if(events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) {
+                //EPOLLRDHUP 连接关闭
+                //EPOLLHUP
+                //EPOLLERR 连接出错
                 assert(users_.count(fd) > 0);
+                //其他条件
                 CloseConn_(&users_[fd]);
             }else if(events & EPOLLIN) {
-             //   printf("in\n");
                 assert(users_.count(fd) > 0);
+                //套接字可读
                 DealRead_(&users_[fd]);
             }else if(events & EPOLLOUT) {
-             //   printf("out\n");
                 assert(users_.count(fd) > 0);
+                //套接字可写
                 DealWrite_(&users_[fd]);
             } else {
+                //位置情况
                 LOG_ERROR("Unexpected event");
             }
         }
@@ -121,7 +116,8 @@ void Server::Start() {
 
 void Server::InitEventMode_(int trigMode){
     listenEvent_ |= EPOLLRDHUP;
-    connEvent_ |= EPOLLRDHUP | EPOLLONESHOT;
+    connEvent_ |= EPOLLRDHUP | EPOLLONESHOT;  
+    //EPOLLONESHOT 每次处理时候都关闭套接字监听
     if(trigMode & 1){
         listenEvent_ |= EPOLLET;        
     }
@@ -136,7 +132,7 @@ void Server::InitEventMode_(int trigMode){
 void Server::CloseConn_(HttpConnection* client) {
     assert(client);
     LOG_INFO("Client[%d] quit!", client->GetFd());
-    printf("Client[%d] quit!\n", client->GetFd());
+    Dprintf("Client[%d] quit!\n", client->GetFd());
     epoller_->DelFd(client->GetFd());
     client->Close();
 }
@@ -150,7 +146,7 @@ void Server::AddClient_(int fd, sockaddr_in &addr) {
     epoller_->AddFd(fd, EPOLLIN | connEvent_);
     SetFdNonblock(fd);
     LOG_INFO("Client[%d] in!", users_[fd].GetFd());
-    printf("Client[%d] in\n", users_[fd].GetFd());
+    Dprintf("Client[%d] in\n", users_[fd].GetFd());
 }
 
 void Server::DealListen_() {
@@ -208,7 +204,6 @@ void Server::OnProcess(HttpConnection *client) {
         if(!statu.empty()){
             Cache::mmFileNode *cacheNode = cache_->GetmmFileNode(statu, client->GetFileLen());
             client->setFile(cacheNode->mmFile);
-          //  printf("filelen:%ld\n", client->GetFileLen());
         }
         epoller_->ModFd(client->GetFd(), connEvent_ | EPOLLOUT);
     }
@@ -220,11 +215,7 @@ void Server::OnWrite_(HttpConnection *client) {
     int writeErrno = 0;
     client->write(&writeErrno);
     if(client->MoreBytes() == 0){
-     //   printf("no more bytes\n");
         CloseConn_(client);
-       /* if(client->IsKeepAlive()){
-            OnProcess(client);    
-        }*/
     }else{
        epoller_->ModFd(client->GetFd(), connEvent_ | EPOLLOUT);     
     }

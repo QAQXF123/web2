@@ -8,7 +8,7 @@
 #include <assert.h>
 class Buffer {
 public:
-    Buffer(int initBuffSize = 1024);
+    Buffer(int initBuffSize = 4096);
     ~Buffer() = default;
 
     size_t WriteableBytes() const;       
@@ -22,7 +22,7 @@ public:
     void Get(size_t len);
     void GetUntil(const char* end);
 
-    void clear() ;
+    void clear();
     std::string GetAllToStr();
 
     const char* BeginWriteConst() const;

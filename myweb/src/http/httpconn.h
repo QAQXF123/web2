@@ -1,4 +1,5 @@
 #pragma once
+
 #include <sys/types.h>
 #include <sys/uio.h>     // readv/writev
 #include <arpa/inet.h>   // sockaddr_in
@@ -103,9 +104,9 @@ class HttpConnection{
                 return "fail";
             }
                 
-            printf("srcDir:%s, path:%s\n", srcDir, req_.path().c_str());
+           //Dprintf("srcDir:%s, path:%s\n", srcDir, req_.path().c_str());
             rsp_.MakeResponse(writeBuff_);
-            printf("make rsp_\n");
+            //Dprintf("make rsp_\n");
             iov_[0].iov_base = const_cast<char*>(writeBuff_.Peek());
             iov_[0].iov_len = writeBuff_.ReadableBytes();
             iovCnt_ = 1;

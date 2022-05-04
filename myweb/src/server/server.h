@@ -7,6 +7,7 @@
 #include <errno.h>
 
 
+
 #include "../epoll/epoll.h"
 #include "../log/log.h"
 #include "../threadpool/threadPool.h"
@@ -17,12 +18,12 @@
 #include "../database/main/table_manager.h"
 
 
+
 class Server{
     public:
         Server(int port, int trigMode, int timeOutMS, bool OptLinger,
-        int sqlPort, const char *sqlUser, const char *sqlPwd, const char *dbName, int connPoolNum,
-        int threadNum,
-        bool openLog, int logLevel, int logQueSize);
+        int sqlPort, const char *sqlUser, const char *sqlPwd, const char *dbName, int connPoolNum, int threadNum,
+        bool openLog, int logLevel, int logQueSize, bool useCache, bool isDebug);
 
         ~Server();
         void Start();
@@ -46,7 +47,8 @@ class Server{
         static const int MAX_FD = 65536;
 
         static int SetFdNonblock(int fd);
-
+        bool isDebug_;
+        bool useCache_;
         int port_;
         bool openLinger_;
         int timeOutMS_;  /* 毫秒MS */

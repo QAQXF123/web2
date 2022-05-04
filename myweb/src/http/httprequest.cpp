@@ -30,7 +30,7 @@ bool HttpRequest::parse(Buffer &buff){
     }
     std::string t = buff.GetAllToStr();
     buff.Append(t);
-    printf("req\n  %s \n\n",     t.c_str());
+   // Dprintf("req\n  %s \n\n",     t.c_str());
     while(buff.ReadableBytes() && state_ != PARSE_STATE::FINISH){
         const char *lineEnd = search(buff.Peek(), buff.BeginWriteConst(), CRLF, CRLF+2);
         string line(buff.Peek(), lineEnd);
@@ -110,8 +110,7 @@ void HttpRequest::ParsePost_(){
   //  std::cout<<body_<<"====\n";
     std::cout<< (method_ == "POST")<<"\n";
     if(method_ == "POST" /*&& header_["Content-Type"] == "application/x-www-form-urlencoded"*/){
-        printf("here\n");
-        std::cout<<path_<<"\n";
+        //Dprintf("here\n");
 
         if(path_ == "/login"){
             

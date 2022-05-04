@@ -31,26 +31,17 @@ class Cache{
             }
 		}
 		
-		void look(){
+		/*void look(){
 			for(auto i : mmFileMap_){
 				printf("%s\n", (i.first).c_str());
 			}
-		}
+		}*/
 	
 		mmFileNode* GetmmFileNode(std::string path, long length){
 			std::unique_lock<std::mutex> locker(mtx_);
 
-			if(mmFileMap_.count(path)){
-				//return *nodeList_.begin();
-				
-                //look();
-              //  printf("cache path:%s size:%d\n", path.c_str(), (int)nodeList_.size());
+			if(mmFileMap_.count(path)){	
 				auto it = mmFileMap_[path];
-              /*  if(*it == nullptr){
-                    printf("null?\n");
-                    return nullptr;
-                }*/	
-            //    printf((*it)->mmFile);
 				auto node = *it;
 				nodeList_.erase(it);
 				nodeList_.push_front(node);
@@ -59,7 +50,6 @@ class Cache{
 				
 			}else{
     			mmFileNode *node = new mmFileNode(path, nullptr, length);
-             //   printf("put node path:%s\n", path.c_str());
 				locker.unlock();
 				if(!PutNode_(path, node)){
 					return nullptr;
@@ -71,7 +61,6 @@ class Cache{
 	private:	
 
 		void UnMapFile_(char *mmFile, long length){
-          //  printf("free cache\n");
 			if(mmFile){
 				munmap(mmFile, length);
         		mmFile = nullptr;
@@ -82,7 +71,6 @@ class Cache{
 			std::unique_lock<std::mutex> locker(mtx_);
 			locker.unlock();
 			int srcFd = open(path.data(), O_RDONLY);
-          // printf("srcFd:%d\n", srcFd);
 			if(srcFd < 0) return false;
 			int *mmRet = (int*)mmap(0, /*mmFileStat_.st_size*/node->length, PROT_READ, MAP_PRIVATE, srcFd, 0);
 			if(*mmRet == -1) return false;
@@ -96,8 +84,6 @@ class Cache{
 			if(static_cast<int>(nodeList_.size()) > maxSize_){
 				PopNode_();
 			}
-          //  printf("after size : %d:%d\n", nodeList_.size(), mmFileMap_.size());
-          //  printf("maxsize%d\n", maxSize_);
 			return true;
 		}
 		void PopNode_(){
