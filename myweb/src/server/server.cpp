@@ -14,7 +14,7 @@ Server::Server(
             threadpool_(new ThreadPool(threadNum)), epoller_(new Epoller()), socket_(new Socket(port)),
             cache_(new Cache()), timer_(new Timer()), tableManager_(new bustub::TableManager())
             
-    {
+{
 
         
 
@@ -27,8 +27,8 @@ Server::Server(
     timeOutMS_ = 0;
     InitEventMode_(0);
     listenFd_ = socket_->Init();
-    Dprintf("listenFd:%d, srcDir:%s\n", listenFd_, srcDir_);
-    openLog = true;
+    //Dprintf("listenFd:%d, srcDir:%s\n", listenFd_, srcDir_);
+    openLog = false;
     if(listenFd_ == -1  || epoller_->AddFd(listenFd_,  listenEvent_ | EPOLLIN) == 0) {
         isClose_ = true;
     }
@@ -83,6 +83,7 @@ void Server::Start() {
         if(timeOutMS_ > 0) {
             timeMS = timer_->GetNextTick();
         }
+        //epoll wait 
         int eventCnt = epoller_->Wait(timeMS);
         for(int i = 0; i < eventCnt; i++) {
             /* 处理事件 */
@@ -117,8 +118,9 @@ void Server::Start() {
 void Server::InitEventMode_(int trigMode){
     listenEvent_ |= EPOLLRDHUP;
     connEvent_ |= EPOLLRDHUP | EPOLLONESHOT;  
-    //EPOLLONESHOT 每次处理时候都关闭套接字监听
+    //EPOLLONESHOT 每次处理时候都关闭事件监听,避免多线程抢占同一套接字
     if(trigMode & 1){
+        
         listenEvent_ |= EPOLLET;        
     }
     if(trigMode & 2){
@@ -137,17 +139,7 @@ void Server::CloseConn_(HttpConnection* client) {
     client->Close();
 }
 
-void Server::AddClient_(int fd, sockaddr_in &addr) {
-    assert(fd > 0);
-    users_[fd].Init(fd, addr);
-    if(timeOutMS_ > 0) {
-        timer_->add(fd, timeOutMS_, std::bind(&Server::CloseConn_, this, &users_[fd]));
-    }
-    epoller_->AddFd(fd, EPOLLIN | connEvent_);
-    SetFdNonblock(fd);
-    LOG_INFO("Client[%d] in!", users_[fd].GetFd());
-    Dprintf("Client[%d] in\n", users_[fd].GetFd());
-}
+
 
 void Server::DealListen_() {
     struct sockaddr_in addr;
@@ -162,6 +154,19 @@ void Server::DealListen_() {
         }
         AddClient_(fd, addr);
     } while(listenEvent_ & EPOLLET);
+}
+
+void Server::AddClient_(int fd, sockaddr_in &addr) {
+    assert(fd > 0);
+    users_[fd].Init(fd, addr);
+    if(timeOutMS_ > 0) {
+        timer_->add(fd, timeOutMS_, std::bind(&Server::CloseConn_, this, &users_[fd]));
+    }
+    SetFdNonblock(fd);
+    epoller_->AddFd(fd, EPOLLIN | connEvent_);
+    
+    LOG_INFO("Client[%d] in!", users_[fd].GetFd());
+    Dprintf("Client[%d] in\n", users_[fd].GetFd());
 }
 
 void Server::DealRead_(HttpConnection *client) {
@@ -192,7 +197,6 @@ void Server::OnRead_(HttpConnection *client) {
     if(ret <= 0){
         return;
     }
-    
     OnProcess(client);
 }
 
@@ -219,8 +223,6 @@ void Server::OnWrite_(HttpConnection *client) {
     }else{
        epoller_->ModFd(client->GetFd(), connEvent_ | EPOLLOUT);     
     }
-   
-
 }
 
 

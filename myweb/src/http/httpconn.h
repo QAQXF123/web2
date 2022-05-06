@@ -15,9 +15,11 @@ class HttpConnection{
             addr_ = {0};
             isClose_ = true;
         }
+
         ~HttpConnection(){
             Close();
         }
+
         void Init(int fd, const sockaddr_in& addr){
             assert(fd > 0);
             userCount++;
@@ -27,6 +29,7 @@ class HttpConnection{
             readBuff_.clear();
             isClose_ = false;
         }
+
         void Close(){
             rsp_.UnmapFile();
             if(isClose_ == false){
@@ -35,6 +38,7 @@ class HttpConnection{
                 close(fd_);
             }
         }
+        
         long GetFileLen() const{
             return iov_[1].iov_len;
         }
@@ -100,7 +104,7 @@ class HttpConnection{
             }else if(req_.parse(readBuff_)){ 
                 rsp_.Init(srcDir, req_.path(), false, 200);
             }else{
-                printf("parse fail\n");
+                //printf("parse fail\n");
                 return "fail";
             }
                 

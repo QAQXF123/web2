@@ -20,7 +20,7 @@ class Cache{
 			long length;
 		};
         
-		Cache(int maxSize = 256): maxSize_(maxSize){
+		Cache(int maxSize = 1): maxSize_(maxSize){
             
         }
 		~Cache(){

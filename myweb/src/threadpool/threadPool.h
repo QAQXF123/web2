@@ -9,8 +9,9 @@ class ThreadPool{
 		explicit ThreadPool(size_t threadCount = 4): pool_(std::make_shared<Pool>()){
 			for(size_t i = 0; i < threadCount; i++){
 				std::thread([pool = pool_]{
-					std::unique_lock<std::mutex> locker(pool->mtx);
+					
 					while(true){
+						std::unique_lock<std::mutex> locker(pool->mtx);
 						if(!pool->tasks.empty()){
 							auto task = pool->tasks.front();
 							pool->tasks.pop();

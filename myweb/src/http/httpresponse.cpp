@@ -22,17 +22,20 @@ const unordered_map<string, string> HttpResponse::TYPE = {
     { ".css",   "text/css "},
     { ".js",    "text/javascript "},
 };
+
 const unordered_map<int, string> HttpResponse::CODE_STATUS = {
     { 200, "OK" },
     { 400, "Bad Request" },
     { 403, "Forbidden" },
     { 404, "Not Found" },
 };
+
 const unordered_map<int, string> HttpResponse::CODE_PATH = {
     { 400, "/400.html" },
     { 403, "/403.html" },
     { 404, "/404.html" },
 };
+
 HttpResponse::HttpResponse(){
     code_ = -1;
     path_ = "";
@@ -40,20 +43,18 @@ HttpResponse::HttpResponse(){
     mmFile_ = nullptr;
     mmFileStat_ = {0};
 }
+
+
 HttpResponse::~HttpResponse(){
-    UnmapFile();
+    //UnmapFile();
 }
 
 void HttpResponse::Init(const string& srcDir,const string& path, bool isKeepAlive, int code){
-    if(mmFile_){
-        UnmapFile();
-    }
     code_ = code;
     isKeepAlive_ = isKeepAlive;
     path_ = srcDir + path;
     mmFile_ = nullptr;
     mmFileStat_ = {0};
-   // cache_ = new Cache();
 }
 
 void HttpResponse::MakeResponse(Buffer &buff){
@@ -64,8 +65,6 @@ void HttpResponse::MakeResponse(Buffer &buff){
     }else{
         code_ = 200;
     }
-  //  printf("code:%d,path:%s\n", code_, path_.data());
-    
     AddStateLine_(buff);
     AddHeader_(buff);
     AddContent_(buff);
@@ -98,12 +97,12 @@ void HttpResponse::AddStateLine_(Buffer &buff){
 
 void HttpResponse::AddHeader_(Buffer &buff){
     buff.Append("Connetion: ");
-    buff.Append("close\r\n");
-   /* if(isKeepAlive_){
+    //buff.Append("close\r\n");
+    if(isKeepAlive_){
         buff.Append("Keep-Alive\r\n");
     }else{
         buff.Append("close\r\n");
-    }*/
+    }
     buff.Append("Content-type: " + GetFileType_() + "\r\n");
 }
 
@@ -122,9 +121,8 @@ void HttpResponse::AddContent_(Buffer &buff){
     }
     mmFile_ = cacheNode->mmFile;
     
-    printf("mmfile:%s\n", mmFile_);*/
-   /* int srcFd = open(path_.data(), O_RDONLY);
-  //  printf("srcFd:%d\n", srcFd);
+    printf("mmfile:%s\n", mmFile_);
+    int srcFd = open(path_.data(), O_RDONLY);
     if(srcFd < 0){
         return;
     }
@@ -134,14 +132,14 @@ void HttpResponse::AddContent_(Buffer &buff){
     }
     mmFile_ = (char*)mmRet;
     close(srcFd);*/
+
     buff.Append("Content-Length: " + to_string(mmFileStat_.st_size) + "\r\n\r\n");
-  //  printf("content-len:%d\n", mmFileStat_.st_size);
 }
 void HttpResponse::UnmapFile(){
-    if(mmFile_){
+    /*if(mmFile_){
         munmap(mmFile_, mmFileStat_.st_size);
         mmFile_ = nullptr;
-    }
+    }*/
 }
 
 string HttpResponse::GetFileType_(){

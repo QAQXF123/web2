@@ -28,13 +28,12 @@ bool HttpRequest::parse(Buffer &buff){
     if(buff.ReadableBytes() <= 0){
         return false;
     }
-    std::string t = buff.GetAllToStr();
+    /*std::string t = buff.GetAllToStr();
     buff.Append(t);
-   // Dprintf("req\n  %s \n\n",     t.c_str());
+    Dprintf("req\n  %s \n\n",     t.c_str());*/
     while(buff.ReadableBytes() && state_ != PARSE_STATE::FINISH){
         const char *lineEnd = search(buff.Peek(), buff.BeginWriteConst(), CRLF, CRLF+2);
         string line(buff.Peek(), lineEnd);
-      //  printf("line:%s\n", line.c_str());
         switch (state_)
         {
         case PARSE_STATE::REQUEST_LINE:
