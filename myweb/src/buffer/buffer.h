@@ -1,4 +1,5 @@
 #pragma once
+
 #include <cstring>   //perror
 #include <iostream>
 #include <unistd.h>  // write
@@ -6,6 +7,7 @@
 #include <vector> //readv
 #include <atomic>
 #include <assert.h>
+
 class Buffer {
 public:
     Buffer(int initBuffSize = 4096);
